@@ -40,7 +40,7 @@
             "PutRequest": {
                 "Item": {
                   "Artist": {"S": "Iron Maiden"},
-                  "SongTitle": {"S": "Aces High
+                  "SongTitle": {"S": "Aces High"}
                   "AlbumTitle": {"S": "Powerslave"},
                   "SongYear": {"S": "1984"}
 			    "Recorded": {"S": "Studio"}
