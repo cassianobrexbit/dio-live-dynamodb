@@ -6,9 +6,9 @@
                   "Artist": {"S": "Iron Maiden"},
                   "SongTitle": {"S": "Wasting Love"},
                   "AlbumTitle": {"S": "Fear of the Dark Live"},
-                  "SongYear": {"S": "1992"}
-		  "Recorded": {"S": "Live"}
-		  "Genre": {"S": "Heavy Metal"}
+                  "SongYear": {"S": "1992"},
+		          "Recorded": {"S": "Live"},
+		          "Genre": {"S": "Heavy Metal"}
                 }
             }
         },
@@ -18,9 +18,9 @@
                   "Artist": {"S": "Iron Maiden"},
                   "SongTitle": {"S": "Weekend Warrior"},
                   "AlbumTitle": {"S": "Fear of the Dark"},
-                  "SongYear": {"S": "1992"}
-		  "Recorded": {"S": "Studio"}
-		  "Genre": {"S": "Heavy Metal"}
+                  "SongYear": {"S": "1992"},
+                  "Recorded": {"S": "Studio"},
+                  "Genre": {"S": "Heavy Metal"}
                 }
             }
         },
@@ -30,9 +30,9 @@
                   "Artist": {"S": "Iron Maiden"},
                   "SongTitle": {"S": "Fear of the Dark"},
                   "AlbumTitle": {"S": "Fear of the Dark Tour"},
-                  "SongYear": {"S": "1992"}
-		  "Recorded": {"S": "Studio"}
-		  "Genre": {"S": "Heavy Metal"}
+                  "SongYear": {"S": "1992"},
+                  "Recorded": {"S": "Studio"},
+                  "Genre": {"S": "Heavy Metal"}
                 }
             }
         },
@@ -40,11 +40,11 @@
             "PutRequest": {
                 "Item": {
                   "Artist": {"S": "Iron Maiden"},
-                  "SongTitle": {"S": "Aces High"}
+                  "SongTitle": {"S": "Aces High"},
                   "AlbumTitle": {"S": "Powerslave"},
-                  "SongYear": {"S": "1984"}
-		  "Recorded": {"S": "Studio"}
-		  "Genre": {"S": "Heavy Metal"}
+                  "SongYear": {"S": "1984"},
+                  "Recorded": {"S": "Studio"},
+                  "Genre": {"S": "Heavy Metal"}
 
                 }
             }
@@ -55,9 +55,9 @@
                   "Artist": {"S": "Iron Maiden"},
                   "SongTitle": {"S": "Empire of the Clouds"},
                   "AlbumTitle": {"S": "The Book of Souls"},
-                  "SongYear": {"S": "2015"}
-		  "Recorded": {"S": "Studio"}
-		  "Genre": {"S": "Heavy Metal"}
+                  "SongYear": {"S": "2015"},
+                  "Recorded": {"S": "Studio"},
+                  "Genre": {"S": "Heavy Metal"}
 
                 }
             }
@@ -68,9 +68,9 @@
                   "Artist": {"S": "Pearl jam"},
                   "SongTitle": {"S": "Jeremy"},
                   "AlbumTitle": {"S": "Ten"},
-                  "SongYear": {"S": "1991"}
-		  "Recorded": {"S": "Studio"}
-		  "Genre": {"S": "Grunge"}
+                  "SongYear": {"S": "1991"},
+                  "Recorded": {"S": "Studio"},
+                  "Genre": {"S": "Grunge"}
 
                 }
             }
@@ -81,9 +81,9 @@
                   "Artist": {"S": "Dream Theater"},
                   "SongTitle": {"S": "A New Beginning"},
                   "AlbumTitle": {"S": "The Astonishing"},
-                  "SongYear": {"S": "2016"}
-		  "Recorded": {"S": "Studio"}
-		  "Genre": {"S": "Progressive Metal"}
+                  "SongYear": {"S": "2016"},
+                  "Recorded": {"S": "Studio"},
+                  "Genre": {"S": "Progressive Metal"}
 
                 }
             }
@@ -94,9 +94,9 @@
                   "Artist": {"S": "Pink Floyd"},
                   "SongTitle": {"S": "Comfortably Numb"},
                   "AlbumTitle": {"S": "Pulse"},
-                  "SongYear": {"S": "1995"}
-		  "Recorded": {"S": "Live"}
-		  "Genre": {"S": "Progressive Rock"}
+                  "SongYear": {"S": "1995"},
+                  "Recorded": {"S": "Live"},
+                  "Genre": {"S": "Progressive Rock"}
 
                 }
             }
@@ -107,9 +107,9 @@
                   "Artist": {"S": "ACDC"},
                   "SongTitle": {"S": "Tunderstruck"},
                   "AlbumTitle": {"S": "Live At River Plate"},
-                  "SongYear": {"S": "2012"}
-		  "Recorded": {"S": "Live"}
-		  "Genre": {"S": "Hard Rock"}
+                  "SongYear": {"S": "2012"},
+                  "Recorded": {"S": "Live"},
+                  "Genre": {"S": "Hard Rock"}
 
                 }
             }
@@ -120,9 +120,9 @@
                   "Artist": {"S": "Metallica"},
                   "SongTitle": {"S": "Master of Puppets"},
                   "AlbumTitle": {"S": "Master of Puppets"},
-                  "SongYear": {"S": "1986"}
-		  "Recorded": {"S": "Studio"}
-		  "Genre": {"S": "Heavy Metal"}
+                  "SongYear": {"S": "1986"},
+                  "Recorded": {"S": "Studio"},
+                  "Genre": {"S": "Heavy Metal"}
 
                 }
             }

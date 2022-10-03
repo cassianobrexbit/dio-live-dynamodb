@@ -75,6 +75,28 @@ aws dynamodb update-table \
         \"ProvisionedThroughput\": {\"ReadCapacityUnits\": 10, \"WriteCapacityUnits\": 5      },\"Projection\":{\"ProjectionType\":\"ALL\"}}}]"
 ```
 
+- Criar um index global secundário baseado no gênero musical
+
+```
+aws dynamodb update-table \
+    --table-name Music \
+    --attribute-definitions AttributeName=Genre,AttributeType=S \
+    --global-secondary-index-updates \
+        "[{\"Create\":{\"IndexName\": \"Genre-index\",\"KeySchema\":[{\"AttributeName\":\"Genre\",\"KeyType\":\"HASH\"}], \
+        \"ProvisionedThroughput\": {\"ReadCapacityUnits\": 10, \"WriteCapacityUnits\": 5      },\"Projection\":{\"ProjectionType\":\"ALL\"}}}]"
+```
+
+- Criar um index global secundário baseado no tipo de gravação
+
+```
+aws dynamodb update-table \
+    --table-name Music \
+    --attribute-definitions AttributeName=Recorded,AttributeType=S \
+    --global-secondary-index-updates \
+        "[{\"Create\":{\"IndexName\": \"Recorded-index\",\"KeySchema\":[{\"AttributeName\":\"Recorded\",\"KeyType\":\"HASH\"}], \
+        \"ProvisionedThroughput\": {\"ReadCapacityUnits\": 10, \"WriteCapacityUnits\": 5      },\"Projection\":{\"ProjectionType\":\"ALL\"}}}]"
+```
+
 - Pesquisar item por artista
 
 ```
@@ -120,4 +142,24 @@ aws dynamodb query \
     --index-name SongTitleYear-index \
     --key-condition-expression "SongTitle = :v_song and SongYear = :v_year" \
     --expression-attribute-values  '{":v_song":{"S":"Wasting Love"},":v_year":{"S":"1992"} }'
+```
+
+- Pesquisa pelo index secundário baseado no gênero musical
+
+```
+aws dynamodb query \
+    --table-name Music \
+    --index-name SongTitleYear-index \
+    --key-condition-expression "SongTitle = :v_song and SongYear = :v_year" \
+    --expression-attribute-values  '{":v_song":{"S":"Wasting Love"},":v_year":{"S":"1992"} }'
+```
+
+- Pesquisa pelo index secundário baseado no tipo de gravação
+
+```
+aws dynamodb query \
+    --table-name Music \
+    --index-name Recorded-index \
+    --key-condition-expression "Recorded = :recorded" \
+    --expression-attribute-values  '{":recorded":{"S":"Live"}}'
 ```
