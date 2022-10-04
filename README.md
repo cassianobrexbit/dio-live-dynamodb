@@ -1,4 +1,4 @@
-# dio-live-dynamodb
+# DIO: Desafio DynamoDB
 Repositório para o live coding do dia 30/09/2021 sobre o Amazon DynamoDB
 
 ### Serviço utilizado
@@ -38,7 +38,7 @@ aws dynamodb batch-write-item \
     --request-items file://batchmusic.json
 ```
 
-- Criar um index global secundário baeado no título do álbum
+- Criar um index global secundário baseado no título do álbum
 
 ```
 aws dynamodb update-table \
