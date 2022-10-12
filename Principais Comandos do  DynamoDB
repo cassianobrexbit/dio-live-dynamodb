@@ -1,0 +1,952 @@
+Criar uma tabela
+As tabelas são as estruturas de dados fundamentais em bancos de dados relacionais e no Amazon
+DynamoDB. Um Relational Database Management System (RDBMS – Sistema de gerenciamento de
+banco de dados relacional) exige que você defina o esquema da tabela ao criá-la. Por outro lado, as
+tabelas do DynamoDB não têm esquemas: além da chave primária, não é necessário definir nenhum
+atributo ou tipo de dados extras ao criar uma tabela.
+Tópicos
+• SQL (p. 30)
+• DynamoDB (p. 31)
+SQL
+Use a instrução CREATE TABLE para criar uma tabela, conforme mostrado no exemplo a seguir.
+CREATE TABLE Music (
+Versão da API 2012-08-10
+30
+Amazon DynamoDB Guia do desenvolvedor
+Criar uma tabela
+ Artist VARCHAR(20) NOT NULL,
+ SongTitle VARCHAR(30) NOT NULL,
+ AlbumTitle VARCHAR(25),
+ Year INT,
+ Price FLOAT,
+ Genre VARCHAR(10),
+ Tags TEXT,
+ PRIMARY KEY(Artist, SongTitle)
+);
+A chave primária dessa tabela consiste em Artist e SongTitle.
+Você deve definir todas as colunas e os tipos de dados da tabela, e a chave primária da tabela. (Você
+pode usar a instrução ALTER TABLE para alterar essas definições mais tarde, se necessário.)
+Muitas implementações de SQL permitem que você defina especificações de armazenamento para a sua
+tabela, como parte da instrução CREATE TABLE. A não ser que você indique de outra forma, a tabela é
+criada com configurações de armazenamento padrão. Em um ambiente de produção, um administrador de
+banco de dados pode ajudar a determinar os parâmetros de armazenamento ideais.
+DynamoDB
+Use a ação CreateTable para criar uma tabela de modo provisionado, especificando parâmetros
+conforme mostrado a seguir:
+{
+ TableName : "Music",
+ KeySchema: [
+ {
+ AttributeName: "Artist",
+ KeyType: "HASH", //Partition key
+ },
+ {
+ AttributeName: "SongTitle",
+ KeyType: "RANGE" //Sort key
+ }
+ ],
+ AttributeDefinitions: [
+ {
+ AttributeName: "Artist",
+ AttributeType: "S"
+ },
+ {
+ AttributeName: "SongTitle",
+ AttributeType: "S"
+ }
+ ],
+ ProvisionedThroughput: { // Only specified if using provisioned mode
+ ReadCapacityUnits: 1,
+ WriteCapacityUnits: 1
+ }
+}
+A chave primária dessa tabela consiste em Artist (chave de partição) e SongTitle (chave de classificação).
+Você deve fornecer os parâmetros a seguir para CreateTable:
+• TableName – Nome da tabela.
+• KeySchema: os atributos que são usados para a chave primária. Para obter mais informações, consulte
+Tabelas, itens e atributos (p. 3) e Chave primária (p. 5).
+• AttributeDefinitions - Os tipos de dados dos atributos de esquema de chaves.
+Versão da API 2012-08-10
+31
+Amazon DynamoDB Guia do desenvolvedor
+Obter informações sobre uma tabela
+• ProvisionedThroughput (for provisioned tables): o número de leituras e gravações
+por segundo que você precisa para esta tabela. O DynamoDB reserva recursos do sistema e de
+armazenamento suficientes para que seus requisitos de throughput sejam sempre atendidos. Você
+pode usar a ação UpdateTable para alterar essas configurações mais tarde, se necessário. Você
+não precisa especificar os requisitos de armazenamento de uma tabela porque a alocação de
+armazenamento é gerenciada inteiramente pelo DynamoDB.
+Note
+Para obter exemplos de código que usam CreateTable, consulte Conceitos básicos do
+DynamoDB e dos AWS SDKs (p. 89).
+Obter informações sobre uma tabela
+Você pode verificar se uma tabela foi criada de acordo com suas especificações. Em um banco de dados
+relacional, todo o esquema da tabela é mostrado. As tabelas do Amazon DynamoDB não têm esquemas,
+portanto, somente os atributos de chave primária são mostrados.
+Tópicos
+• SQL (p. 32)
+• DynamoDB (p. 32)
+SQL
+A maioria dos sistemas de gerenciamento de bancos de dados relacionais (RDBMS) permitem que você
+descreva a estrutura de uma tabela – colunas, tipos de dados, definição de chave primária, e assim por
+diante. Não há nenhuma maneira padrão de fazer isso no SQL. No entanto, muitos sistemas de banco de
+dados fornecem um comando DESCRIBE. Veja a seguir um exemplo do MySQL.
+DESCRIBE Music;
+Isso retorna a estrutura de sua tabela, com todos os nomes de colunas, tipos de dados e tamanhos.
++------------+-------------+------+-----+---------+-------+
+| Field | Type | Null | Key | Default | Extra |
++------------+-------------+------+-----+---------+-------+
+| Artist | varchar(20) | NO | PRI | NULL | |
+| SongTitle | varchar(30) | NO | PRI | NULL | |
+| AlbumTitle | varchar(25) | YES | | NULL | |
+| Year | int(11) | YES | | NULL | |
+| Price | float | YES | | NULL | |
+| Genre | varchar(10) | YES | | NULL | |
+| Tags | text | YES | | NULL | |
++------------+-------------+------+-----+---------+-------+
+A chave primária dessa tabela consiste em Artist e SongTitle.
+DynamoDB
+O DynamoDB tem uma ação DescribeTable que é semelhante. O único parâmetro é o nome da tabela.
+{
+ TableName : "Music"
+}
+Versão da API 2012-08-10
+32
+Amazon DynamoDB Guia do desenvolvedor
+Gravar dados em uma tabela
+A resposta de DescribeTable é semelhante ao seguinte.
+{
+ "Table": {
+ "AttributeDefinitions": [
+ {
+ "AttributeName": "Artist",
+ "AttributeType": "S"
+ },
+ {
+ "AttributeName": "SongTitle",
+ "AttributeType": "S"
+ }
+ ],
+ "TableName": "Music",
+ "KeySchema": [
+ {
+ "AttributeName": "Artist",
+ "KeyType": "HASH" //Partition key
+ },
+ {
+ "AttributeName": "SongTitle",
+ "KeyType": "RANGE" //Sort key
+ }
+ ],
+ ...
+DescribeTable também retorna informações sobre índices na tabela, configurações de throughput
+provisionado, uma contagem aproximada de itens e outros metadados.
+Gravar dados em uma tabela
+As tabelas de bancos de dados relacionais contêm linhas de dados. As linhas são compostas de colunas.
+As tabelas do Amazon DynamoDB contêm itens. Os itens são compostos de atributos.
+Esta seção descreve como gravar uma linha (ou item) em uma tabela.
+Tópicos
+• SQL (p. 33)
+• DynamoDB (p. 34)
+SQL
+A tabela em um banco de dados relacional é uma estrutura de dados bidimensional composta por linhas
+e colunas. Alguns sistemas de gerenciamento de banco de dados também fornecem suporte para dados
+semiestruturados, geralmente com tipos de dados nativos JSON ou XML. No entanto, os detalhes de
+implementação variam entre fornecedores.
+No SQL, use a instrução INSERT para adicionar uma linha a uma tabela.
+INSERT INTO Music
+ (Artist, SongTitle, AlbumTitle,
+ Year, Price, Genre,
+ Tags)
+VALUES(
+ 'No One You Know', 'Call Me Today', 'Somewhat Famous',
+ 2015, 2.14, 'Country',
+ '{"Composers": ["Smith", "Jones", "Davis"],"LengthInSeconds": 214}'
+Versão da API 2012-08-10
+33
+Amazon DynamoDB Guia do desenvolvedor
+Gravar dados em uma tabela
+);
+A chave primária dessa tabela consiste em Artist e SongTitle. Você deve especificar valores para essas
+colunas.
+Note
+Este exemplo usa a coluna Tags para armazenar dados semiestruturados sobre as músicas
+na tabela Music. A coluna Tags está definida como tipo TEXT, que pode armazenar até 65.535
+caracteres em MySQL.
+DynamoDB
+No Amazon DynamoDB, é possível usar a API do DynamoDB ou PartiQL, uma linguagem de consultas
+compatível com SQL, para adicionar um item a uma tabela.
+DynamoDB API
+Com a API do DynamoDB, você usa a operação PutItem para adicionar um item a uma tabela.
+{
+ TableName: "Music",
+ Item: {
+ "Artist":"No One You Know",
+ "SongTitle":"Call Me Today",
+ "AlbumTitle":"Somewhat Famous",
+ "Year": 2015,
+ "Price": 2.14,
+ "Genre": "Country",
+ "Tags": {
+ "Composers": [
+ "Smith",
+ "Jones",
+ "Davis"
+ ],
+ "LengthInSeconds": 214
+ }
+ }
+}
+A chave primária dessa tabela consiste em Artist e SongTitle. Você deve especificar valores para
+esses atributos.
+Aqui estão algumas coisas importantes para saber sobre este exemplo de PutItem:
+• O DynamoDB oferece suporte nativo a documentos usando JSON. Isso torna o DynamoDB ideal
+para armazenar dados semiestruturados, como Tags. Você também pode recuperar e manipular
+dados de dentro de documentos JSON.
+• A tabela Music não tem atributos predefinidos, além da chave primária (Artist e SongTitle).
+• A maioria dos bancos de dados SQL são orientados a transação. Quando você emite uma instrução
+INSERT, as modificações de dados não são permanentes até que você execute uma instrução
+COMMIT. Com o Amazon DynamoDB, os efeitos de uma ação PutItem são permanentes quando o
+DynamoDB responde com um código de status HTTP 200 (OK).
+Note
+Para obter exemplos de códigos que usam PutItem, consulte Conceitos básicos do
+DynamoDB e dos AWS SDKs (p. 89).
+A seguir há alguns outros exemplos de PutItem.
+Versão da API 2012-08-10
+34
+Amazon DynamoDB Guia do desenvolvedor
+Gravar dados em uma tabela
+{
+ TableName: "Music",
+ Item: {
+ "Artist": "No One You Know",
+ "SongTitle": "My Dog Spot",
+ "AlbumTitle":"Hey Now",
+ "Price": 1.98,
+ "Genre": "Country",
+ "CriticRating": 8.4
+ }
+}
+{
+ TableName: "Music",
+ Item: {
+ "Artist": "No One You Know",
+ "SongTitle": "Somewhere Down The Road",
+ "AlbumTitle":"Somewhat Famous",
+ "Genre": "Country",
+ "CriticRating": 8.4,
+ "Year": 1984
+ }
+}
+{
+ TableName: "Music",
+ Item: {
+ "Artist": "The Acme Band",
+ "SongTitle": "Still In Love",
+ "AlbumTitle":"The Buck Starts Here",
+ "Price": 2.47,
+ "Genre": "Rock",
+ "PromotionInfo": {
+ "RadioStationsPlaying":[
+ "KHCR", "KBQX", "WTNR", "WJJH"
+ ],
+ "TourDates": {
+ "Seattle": "20150625",
+ "Cleveland": "20150630"
+ },
+ "Rotation": "Heavy"
+ }
+ }
+}
+{
+ TableName: "Music",
+ Item: {
+ "Artist": "The Acme Band",
+ "SongTitle": "Look Out, World",
+ "AlbumTitle":"The Buck Starts Here",
+ "Price": 0.99,
+ "Genre": "Rock"
+ }
+}
+Note
+Além de PutItem, o DynamoDB oferece suporte a uma ação BatchWriteItem para gravar
+vários itens ao mesmo tempo.
+Versão da API 2012-08-10
+35
+Amazon DynamoDB Guia do desenvolvedor
+Ler dados de uma tabela
+PartiQL for DynamoDB
+Com PartiQL, você usa a operação ExecuteStatement para adicionar um item a uma tabela,
+usando a instrução Insert PartiQL.
+INSERT into Music value {
+ 'Artist': 'No One You Know',
+ 'SongTitle': 'Call Me Today',
+ 'AlbumTitle': 'Somewhat Famous',
+ 'Year' : '2015',
+ 'Genre' : 'Acme'
+}
+A chave primária dessa tabela consiste em Artist e SongTitle. Você deve especificar valores para
+esses atributos.
+Note
+Para obter exemplos de código que usam Insert e ExecuteStatement, consulte
+Instruções Insert em PartiQL para DynamoDB (p. 499).
+Principais diferenças ao ler dados de uma tabela
+Com o SQL, você usa a instrução SELECT para recuperar uma ou mais linhas de uma tabela. Use a
+cláusula WHERE para determinar os dados que são retornados para você.
+O Amazon DynamoDB oferece as seguintes operações para a leitura de dados:
+• ExecuteStatement recupera um ou vários itens de uma tabela. BatchExecuteStatement recupera
+vários itens de tabelas diferentes em uma única operação. Ambas as operações usam PartiQL, uma
+linguagem de consulta compatível com SQL.
+• GetItem: recupera um único item de uma tabela. Esta é a maneira mais eficiente de ler um único
+item, pois ele dá acesso direto à localização física do item. (O DynamoDB também oferece a operação
+BatchGetItem, permitindo que você realize até 100 chamadas GetItem em uma única operação.)
+• Query: recupera todos os itens que têm uma chave de partição específica. Nesses itens, você pode
+aplicar uma condição à chave de classificação e recuperar apenas um subconjunto dos dados. Query
+fornece acesso rápido e eficiente às partições em que os dados são armazenados. (Para obter mais
+informações, consulte Partições e distribuição de dados (p. 23).)
+• Scan: recupera todos os itens da tabela especificada. (Essa operação não deve ser usada com tabelas
+grandes, pois ela pode consumir grandes quantidades de recursos do sistema.)
+Note
+Com um banco de dados relacional, você pode usar a instrução SELECT para juntar os dados
+de várias tabelas e retornar os resultados. Junções são fundamentais para o modelo relacional.
+Para garantir que as junções sejam executadas de forma eficiente, o banco de dados e suas
+aplicações devem ter a performance ajustada de forma contínua. O DynamoDB é um banco de
+dados NoSQL não relacional que não é compatível com junções de tabelas. Em vez disso, os
+aplicativos leem dados de uma tabela por vez.
+As seções a seguir descrevem diferentes casos de uso para a leitura de dados e como executar essas
+tarefas com um banco de dados relacional e com o DynamoDB.
+Tópicos
+• Ler um item usando sua chave primária (p. 37)
+• Consultar uma tabela (p. 38)
+Versão da API 2012-08-10
+36
+Amazon DynamoDB Guia do desenvolvedor
+Ler dados de uma tabela
+• Verificar uma tabela (p. 41)
+Ler um item usando sua chave primária
+Um padrão de acesso comuns para bancos de dados é ler um único item de uma tabela. Você precisa
+especificar a chave primária do item que deseja.
+Tópicos
+• SQL (p. 37)
+• DynamoDB (p. 37)
+SQL
+No SQL, você usa a instrução SELECT para recuperar dados de uma tabela. Você pode solicitar uma ou
+mais colunas no resultado (ou todas elas, se você usar o operador *). A cláusula WHERE determina quais
+linhas devem ser retornadas.
+A seguinte é uma instrução SELECT para recuperar uma única linha da tabela Music. A cláusula WHERE
+especifica os valores de chave primária.
+SELECT *
+FROM Music
+WHERE Artist='No One You Know' AND SongTitle = 'Call Me Today'
+É possível modificar a consulta para recuperar somente um subconjunto de colunas.
+SELECT AlbumTitle, Year, Price
+FROM Music
+WHERE Artist='No One You Know' AND SongTitle = 'Call Me Today'
+Observe que a chave primária dessa tabela consiste em Artist e SongTitle.
+DynamoDB
+No Amazon DynamoDB, você pode usar a API do DynamoDB ou PartiQL, uma linguagem de consultas
+compatível com SQL, para ler um item de uma tabela.
+DynamoDB API
+Com a API do DynamoDB, você usa a operação PutItem para adicionar um item a uma tabela.
+O DynamoDB fornece a ação GetItem para recuperar um item por sua chave primária. GetItem é
+altamente eficiente, pois dá acesso direto à localização física do item. (Para obter mais informações,
+consulte Partições e distribuição de dados (p. 23).)
+Por padrão, GetItem retorna todo o item com todos os seus atributos.
+{
+ TableName: "Music",
+ Key: {
+ "Artist": "No One You Know",
+ "SongTitle": "Call Me Today"
+ }
+}
+É possível adicionar um parâmetro ProjectionExpression para retornar apenas alguns dos
+atributos.
+Versão da API 2012-08-10
+37
+Amazon DynamoDB Guia do desenvolvedor
+Ler dados de uma tabela
+{
+ TableName: "Music",
+ Key: {
+ "Artist": "No One You Know",
+ "SongTitle": "Call Me Today"
+ },
+ "ProjectionExpression": "AlbumTitle, Year, Price"
+}
+Observe que a chave primária dessa tabela consiste em Artist e SongTitle.
+A ação GetItem do DynamoDB é muito eficiente: ela usa valores de chave primária para determinar
+o local de armazenamento exato do item em questão e recupera-o diretamente dali. A instrução SQL
+SELECT é similarmente eficiente, no caso da recuperação de itens por valores de chave primária.
+A instrução SQL SELECT é compatível com muitos tipos de consultas e verificações de tabela. O
+DynamoDB oferece funcionalidade semelhante com suas ações Query e Scan, que são descritas em
+Consultar uma tabela (p. 38) e Verificar uma tabela (p. 41).
+A instrução SQL SELECT pode realizar junções de tabela, permitindo que você recupere dados de
+várias tabelas ao mesmo tempo. As junções são mais eficazes onde as tabelas de banco de dados
+são normalizadas e os relacionamentos entre as tabelas são claros. No entanto, se você juntar muitas
+tabelas em uma instrução SELECT, a performance do aplicativo pode ser afetada. Você pode resolver
+esses problemas usando replicação de banco de dados, visualizações materializadas ou regravações
+de consulta.
+O DynamoDB é um banco de dados não relacional e não oferece suporte a junções de tabela. Se
+você estiver migrando uma aplicação existente de um banco de dados relacional para o DynamoDB,
+será necessário desnormalizar o seu modelo de dados para eliminar a necessidade de junções.
+Note
+Para obter exemplos de código que usam GetItem, consulte Conceitos básicos do
+DynamoDB e dos AWS SDKs (p. 89).
+PartiQL for DynamoDB
+Com PartiQL, você usa a operação ExecuteStatement para ler um item de uma tabela, usando a
+instrução Select PartiQL.
+SELECT AlbumTitle, Year, Price
+FROM Music
+WHERE Artist='No One You Know' AND SongTitle = 'Call Me Today'
+Observe que a chave primária dessa tabela consiste em Artist e SongTitle.
+Note
+A instrução Select PartiQL também pode ser usada para consultar ou digitalizar uma tabela
+do DynamoDB
+Para obter exemplos de código que usam Select e ExecuteStatement, consulte Instruções Select
+em PartiQL para DynamoDB (p. 492).
+Consultar uma tabela
+Outro padrão de acesso comum é a leitura de vários itens de uma tabela, com base em seus critérios de
+consulta.
+Versão da API 2012-08-10
+38
+Amazon DynamoDB Guia do desenvolvedor
+Ler dados de uma tabela
+Tópicos
+• SQL (p. 39)
+• DynamoDB (p. 39)
+SQL
+A instrução SQL SELECT permite consultar as colunas-chave, colunas que não são chave ou qualquer
+combinação. A cláusula WHERE determina quais linhas são retornadas, conforme mostrado nos exemplos a
+seguir.
+/* Return a single song, by primary key */
+SELECT * FROM Music
+WHERE Artist='No One You Know' AND SongTitle = 'Call Me Today';
+/* Return all of the songs by an artist */
+SELECT * FROM Music
+WHERE Artist='No One You Know';
+/* Return all of the songs by an artist, matching first part of title */
+SELECT * FROM Music
+WHERE Artist='No One You Know' AND SongTitle LIKE 'Call%';
+/* Return all of the songs by an artist, with a particular word in the title...
+...but only if the price is less than 1.00 */
+SELECT * FROM Music
+WHERE Artist='No One You Know' AND SongTitle LIKE '%Today%'
+AND Price < 1.00;
+Observe que a chave primária dessa tabela consiste em Artist e SongTitle.
+DynamoDB
+No Amazon DynamoDB, você pode usar a API do DynamoDB ou PartiQL, uma linguagem de consultas
+compatível com SQL, para consultar um item de uma tabela.
+DynamoDB API
+A ação Query do Amazon DynamoDB permite recuperar dados de forma semelhante. A ação Query
+oferece acesso rápido e eficiente aos locais físicos onde os dados são armazenados. Para mais
+informações, consulte Partições e distribuição de dados (p. 23).
+Você pode usar Query com qualquer tabela que tenha uma chave primária composta (chave de
+partição e chave de classificação). Você deve especificar uma condição de igualdade para a chave de
+partição e, se desejar, poderá fornecer outra condição para a chave de classificação.
+O parâmetro KeyConditionExpression especifica os valores de chave que você deseja consultar.
+Você pode usar uma FilterExpression opcional para remover determinados itens dos resultados
+antes que eles sejam retornados para você.
+No DynamoDB, você deve usar ExpressionAttributeValues como espaços reservados em
+parâmetros de expressão (como KeyConditionExpression e FilterExpression). Isso é
+Versão da API 2012-08-10
+39
+Amazon DynamoDB Guia do desenvolvedor
+Ler dados de uma tabela
+análogo ao uso de variáveis de ligação em bancos de dados relacionais, onde você substitui os
+valores reais na instrução SELECT em tempo de execução.
+Observe que a chave primária dessa tabela consiste em Artist e SongTitle.
+A seguir há alguns exemplos de Query no DynamoDB.
+// Return a single song, by primary key
+{
+ TableName: "Music",
+ KeyConditionExpression: "Artist = :a and SongTitle = :t",
+ ExpressionAttributeValues: {
+ ":a": "No One You Know",
+ ":t": "Call Me Today"
+ }
+}
+// Return all of the songs by an artist
+{
+ TableName: "Music",
+ KeyConditionExpression: "Artist = :a",
+ ExpressionAttributeValues: {
+ ":a": "No One You Know"
+ }
+}
+// Return all of the songs by an artist, matching first part of title
+{
+ TableName: "Music",
+ KeyConditionExpression: "Artist = :a and begins_with(SongTitle, :t)",
+ ExpressionAttributeValues: {
+ ":a": "No One You Know",
+ ":t": "Call"
+ }
+}
+Note
+Para obter exemplos de código que usam Query, consulte Conceitos básicos do DynamoDB
+e dos AWS SDKs (p. 89).
+PartiQL for DynamoDB
+Com PartiQL, é possível realizar uma consulta usando a ação ExecuteStatement e a instrução
+Select na chave de partição.
+SELECT AlbumTitle, Year, Price
+FROM Music
+WHERE Artist='No One You Know'
+Usar a instrução SELECT desse modo retornará todas as músicas associadas a este Artist
+específico.
+Para obter exemplos de código que usam Select e ExecuteStatement, consulte Instruções Select
+em PartiQL para DynamoDB (p. 492).
+Versão da API 2012-08-10
+40
+Amazon DynamoDB Guia do desenvolvedor
+Ler dados de uma tabela
+Verificar uma tabela
+No SQL, uma instrução SELECT sem uma cláusula WHERE retornará cada linha em uma tabela. No
+Amazon DynamoDB, a operação Scan faz a mesma coisa. Em ambos os casos, é possível recuperar
+todos os itens ou somente alguns deles.
+Se você estiver usando um banco de dados SQL ou um NoSQL, as verificações devem ser usadas com
+moderação, pois elas podem consumir grandes quantidades de recursos do sistema. Às vezes, uma
+verificação é apropriada (como a verificação de uma pequena tabela) ou inevitável (como a execução
+de uma exportação de dados em massa). No entanto, como uma regra geral, você deve projetar seus
+aplicativos para evitar a execução de verificações.
+Tópicos
+• SQL (p. 41)
+• DynamoDB (p. 41)
+SQL
+No SQL, você pode verificar uma tabela e recuperar todos os seus dados usando uma instrução SELECT
+sem especificar uma cláusula WHERE. Você pode solicitar uma ou mais colunas no resultado. Ou é possível
+solicitar todas elas se usar o caractere curinga (*).
+Veja a seguir exemplos do uso de uma instrução SELECT.
+/* Return all of the data in the table */
+SELECT * FROM Music;
+/* Return all of the values for Artist and Title */
+SELECT Artist, Title FROM Music;
+DynamoDB
+No Amazon DynamoDB, você pode usar a API do DynamoDB ou PartiQL, uma linguagem de consultas
+compatível com SQL, para executar uma varredura em uma tabela.
+DynamoDB API
+Com a API do DynamoDB, use a operação Scan para retornar um ou mais itens e atributos de item ao
+acessar cada item em uma tabela ou um índice secundário.
+// Return all of the data in the table
+{
+ TableName: "Music"
+}
+// Return all of the values for Artist and Title
+{
+ TableName: "Music",
+ ProjectionExpression: "Artist, Title"
+}
+A ação Scan também oferece um parâmetro FilterExpression, que pode ser usado para
+descartar itens que você não deseja que sejam exibidos nos resultados. Uma FilterExpression é
+Versão da API 2012-08-10
+41
+Amazon DynamoDB Guia do desenvolvedor
+Gerenciamento de índices
+aplicada após a verificação ser realizada, mas antes que os resultados sejam retornados para você.
+(Isso não é recomendado com tabelas grandes: você ainda será cobrado por toda a ação Scan,
+mesmo se apenas alguns itens correspondentes forem retornados.)
+Note
+Para obter exemplos de código que usam Scan, consulte Conceitos básicos do DynamoDB e
+dos AWS SDKs (p. 89).
+PartiQL for DynamoDB
+Com PartiQL, você executa uma varredura usando a operação ExecuteStatement para retornar
+todo o conteúdo de uma tabela usando a instrução Select.
+SELECT AlbumTitle, Year, Price
+FROM Music
+Observe que esta instrução retornará todos os itens para a tabela Music.
+Para obter exemplos de código que usam Select e ExecuteStatement, consulte Instruções Select
+em PartiQL para DynamoDB (p. 492).
+Gerenciamento de índices
+Índices dão a você acesso a padrões de consulta alternativos, e você pode agilizar as consultas. Esta
+seção compara e contrasta a criação e o uso de índices no SQL e no Amazon DynamoDB.
+Caso esteja usando um banco de dados relacional ou o DynamoDB, você deve ser criterioso com a
+criação do índice. Sempre que uma gravação ocorre em uma tabela, todos os índices da tabela devem ser
+atualizados. Em um ambiente que exige muita gravação com tabelas grandes, isso pode consumir grandes
+quantidades de recursos do sistema. Em um ambiente somente leitura ou em sua maioria de leitura, essa
+não é uma grande preocupação. Entretanto, você deve garantir que os índices estejam realmente sendo
+usados por seu aplicativo, e não simplesmente ocupando espaço.
+Tópicos
+• Criar um índice (p. 42)
+• Consultar e verificar um índice (p. 44)
+Criar um índice
+Compare a instrução CREATE INDEX em SQL com a operação UpdateTable no Amazon DynamoDB.
+Tópicos
+• SQL (p. 42)
+• DynamoDB (p. 43)
+SQL
+Em um banco de dados relacional, índice é uma estrutura de dados que permite realizar consultas rápidas
+em diferentes colunas em uma tabela. Você pode usar a instrução SQL CREATE INDEX para adicionar um
+índice a uma tabela existente, especificando as colunas a serem indexadas. Após a criação do índice, você
+pode consultar os dados na tabela como sempre, mas agora o banco de dados pode usar o índice para
+localizar rapidamente as linhas especificadas na tabela, em vez de verificar toda a tabela.
+Versão da API 2012-08-10
+42
+Amazon DynamoDB Guia do desenvolvedor
+Gerenciamento de índices
+Depois que você cria um índice, o banco de dados o mantém para você. Sempre que você modifica os
+dados na tabela, o índice é modificado automaticamente para refletir as alterações da tabela.
+No MySQL, é possível criar um índice da seguinte forma.
+CREATE INDEX GenreAndPriceIndex
+ON Music (genre, price);
+DynamoDB
+No DynamoDB você pode criar e usar um índice secundário para atender a objetivos semelhantes.
+Os índices no DynamoDB são diferentes dos seus equivalentes relacionais. Ao criar um índice secundário,
+você deve especificar os atributos de chave: uma chave de partição e uma chave de classificação. Depois
+de criar o índice secundário, você pode usar a operação Query ou Scan da mesma forma como faria com
+uma tabela. O DynamoDB não tem um otimizador de consultas. Portanto, um índice secundário é usado
+apenas quando você usa a operação Query ou Scan.
+O DynamoDB aceita dois tipos diferentes de índices:
+• Os índices secundários globais – a chave primária do índice pode ser qualquer dois atributos de sua
+tabela.
+• Índices secundários locais: a chave de partição do índice deve ser a mesma que a chave de partição de
+sua tabela. No entanto, a chave de classificação pode ser qualquer outro atributo.
+O DynamoDB garante que os dados em um índice secundário sejam finais consistentes com sua tabela.
+Você pode solicitar ações Query ou Scan fortemente consistentes em uma tabela ou em um índice
+secundário local. No entanto, índices secundários globais somente oferecem suporte à consistência
+eventual.
+É possível adicionar um índice secundário global a uma tabela existente usando a ação UpdateTable e
+especificando GlobalSecondaryIndexUpdates.
+{
+ TableName: "Music",
+ AttributeDefinitions:[
+ {AttributeName: "Genre", AttributeType: "S"},
+ {AttributeName: "Price", AttributeType: "N"}
+ ],
+ GlobalSecondaryIndexUpdates: [
+ {
+ Create: {
+ IndexName: "GenreAndPriceIndex",
+ KeySchema: [
+ {AttributeName: "Genre", KeyType: "HASH"}, //Partition key
+ {AttributeName: "Price", KeyType: "RANGE"}, //Sort key
+ ],
+ Projection: {
+ "ProjectionType": "ALL"
+ },
+ ProvisionedThroughput: { // Only specified
+ if using provisioned mode
+ "ReadCapacityUnits": 1,"WriteCapacityUnits": 1
+ }
+ }
+ }
+ ]
+}
+Versão da API 2012-08-10
+43
+Amazon DynamoDB Guia do desenvolvedor
+Gerenciamento de índices
+Você deve fornecer os parâmetros a seguir para UpdateTable:
+• TableName - a tabela à qual o índice será associado.
+• AttributeDefinitions - os tipos de dados dos atributos de esquema de chaves do índice.
+• GlobalSecondaryIndexUpdates - detalhes sobre o índice que você deseja criar:
+• IndexName - um nome para o índice.
+• KeySchema: os atributos que são usados para a chave primária do índice.
+• Projection: atributos da tabela que são copiados para o índice. Neste caso, ALL significa que todos
+os atributos são copiados.
+• ProvisionedThroughput (for provisioned tables): o número de leituras e gravações por
+segundo que são necessários para este índice. (Isso é separado das configurações de throughput
+provisionado da tabela.)
+Parte dessa operação envolve backfilling de dados da tabela para o novo índice. Durante o backfilling, a
+tabela permanece disponível. No entanto, o índice não está pronto até que seu atributo Backfilling
+mude de verdadeiro para falso. Você pode usar a ação DescribeTable para visualizar esse atributo.
+Note
+Para obter exemplos de código que usam UpdateTable, consulte Conceitos básicos do
+DynamoDB e dos AWS SDKs (p. 89).
+Consultar e verificar um índice
+Compare a consulta e a verificação de um índice usando a instrução SELECT em SQL com as operações
+Query e Scan no Amazon DynamoDB.
+Tópicos
+• SQL (p. 44)
+• DynamoDB (p. 45)
+SQL
+Em um banco de dados relacional, você não trabalha diretamente com índices. Em vez disso, você
+consulta tabelas, emitindo instruções SELECT, e o otimizador de consultas pode fazer uso de índices.
+Um otimizador de consultas é um componente do sistema de gerenciamento de banco de dados relacional
+(RDBMS - relational database management system) que avalia os índices disponíveis e determina se
+eles podem ser usados para agilizar uma consulta. Se os índices puderem ser usados para acelerar uma
+consulta, o RDBMS acessará o índice primeiro e, em seguida, o usará para localizar os dados na tabela.
+Estas são algumas instruções SQL que podem usar GenreAndPriceIndex para melhorar a performance.
+Presumimos que a tabela Music tenha dados suficientes para que o otimizador de consultas decida usar
+esse índice, em vez de simplesmente verificar a tabela inteira.
+/* All of the rock songs */
+SELECT * FROM Music
+WHERE Genre = 'Rock';
+/* All of the cheap country songs */
+SELECT Artist, SongTitle, Price FROM Music
+WHERE Genre = 'Country' AND Price < 0.50;
+Versão da API 2012-08-10
+44
+Amazon DynamoDB Guia do desenvolvedor
+Gerenciamento de índices
+DynamoDB
+No DynamoDB, execute as operações Query e Scan diretamente no índice, como faria em uma tabela.
+É possível usar a API do DynamoDB ou PartiQL, uma linguagem de consultas compatível com SQL, para
+consultar ou verificar o índice. Você deve especificar TableName e IndexName.
+As seguintes são algumas consultas sobre GenreAndPriceIndex no DynamoDB. (O esquema de chaves
+desse índice consiste em Genre e Price.)
+DynamoDB API
+// All of the rock songs
+{
+ TableName: "Music",
+ IndexName: "GenreAndPriceIndex",
+ KeyConditionExpression: "Genre = :genre",
+ ExpressionAttributeValues: {
+ ":genre": "Rock"
+ },
+};
+Este exemplo usa uma ProjectionExpression para indicar que somente alguns dos atributos, em
+vez de todos eles, são exibidos nos resultados.
+// All of the cheap country songs
+{
+ TableName: "Music",
+ IndexName: "GenreAndPriceIndex",
+ KeyConditionExpression: "Genre = :genre and Price < :price",
+ ExpressionAttributeValues: {
+ ":genre": "Country",
+ ":price": 0.50
+ },
+ ProjectionExpression: "Artist, SongTitle, Price"
+};
+Veja a seguir uma verificação em GenreAndPriceIndex.
+// Return all of the data in the index
+{
+ TableName: "Music",
+ IndexName: "GenreAndPriceIndex"
+}
+PartiQL for DynamoDB
+Com PartiQL, use a instrução Select PartiQL para realizar consultas e varreduras no índice.
+// All of the rock songs
+SELECT *
+FROM Music.GenreAndPriceIndex
+WHERE Genre = 'Rock'
+// All of the cheap country songs
+Versão da API 2012-08-10
+45
+Amazon DynamoDB Guia do desenvolvedor
+Modificar dados em uma tabela
+SELECT *
+FROM Music.GenreAndPriceIndex
+WHERE Genre = 'Rock' AND Price < 0.50
+Veja a seguir uma verificação em GenreAndPriceIndex.
+// Return all of the data in the index
+SELECT *
+FROM Music.GenreAndPriceIndex
+Note
+Para obter exemplos de códigos que usam Select, consulte Instruções Select em PartiQL
+para DynamoDB (p. 492).
+Modificar dados em uma tabela
+A linguagem SQL fornece a instrução UPDATE para modificar dados. O Amazon DynamoDB usa a
+operação UpdateItem para realizar tarefas semelhantes.
+Tópicos
+• SQL (p. 46)
+• DynamoDB (p. 46)
+SQL
+No SQL, você usa a instrução UPDATE para modificar uma ou mais linhas. A cláusula SET especifica novos
+valores para uma ou mais colunas, e a cláusula WHERE determina quais linhas são modificadas. Veja um
+exemplo a seguir.
+UPDATE Music
+SET RecordLabel = 'Global Records'
+WHERE Artist = 'No One You Know' AND SongTitle = 'Call Me Today';
+Se nenhuma linha corresponder à cláusula WHERE, a instrução UPDATE não terá efeito.
+DynamoDB
+No DynamoDB, você pode usar a API clássica ou PartiQL, uma linguagem de consultas compatível com
+SQL, para modificar um único item. (Caso deseje modificar vários itens, você deve usar várias operações .)
+DynamoDB API
+Com a API do DynamoDB, use a ação UpdateItem para modificar um único item.
+{
+ TableName: "Music",
+ Key: {
+ "Artist":"No One You Know",
+ "SongTitle":"Call Me Today"
+ },
+ UpdateExpression: "SET RecordLabel = :label",
+ ExpressionAttributeValues: {
+ ":label": "Global Records"
+ }
+Versão da API 2012-08-10
+46
+Amazon DynamoDB Guia do desenvolvedor
+Modificar dados em uma tabela
+}
+É necessário especificar os atributos Key do item a ser modificado e um UpdateExpression para
+especificar valores de atributo. UpdateItem se comporta com uma operação "upsert": o item será
+atualizado se existir na tabela, mas, caso contrário, o novo item será adicionado (inserido).
+UpdateItem oferece suporte a gravações condicionais, nas quais a operação será bemsucedida apenas se uma ConditionExpression específica for verdadeira. Por exemplo, a ação
+UpdateItem a seguir não realiza a atualização, a menos que o preço da música seja maior ou igual a
+2,00.
+{
+ TableName: "Music",
+ Key: {
+ "Artist":"No One You Know",
+ "SongTitle":"Call Me Today"
+ },
+ UpdateExpression: "SET RecordLabel = :label",
+ ConditionExpression: "Price >= :p",
+ ExpressionAttributeValues: {
+ ":label": "Global Records",
+ ":p": 2.00
+ }
+}
+UpdateItem também oferece suporte a contadores atômicos ou a atributos do tipo Number que
+podem ser aumentados ou reduzidos. Os contadores atômicos são semelhantes de muitas maneiras a
+geradores de sequências, colunas de identidade ou campos de incremento automático em bancos de
+dados SQL.
+Veja a seguir um exemplo de uma ação UpdateItem para inicializar um novo atributo (Plays) para
+controlar o número de vezes em que uma música foi reproduzida.
+{
+ TableName: "Music",
+ Key: {
+ "Artist":"No One You Know",
+ "SongTitle":"Call Me Today"
+ },
+ UpdateExpression: "SET Plays = :val",
+ ExpressionAttributeValues: {
+ ":val": 0
+ },
+ ReturnValues: "UPDATED_NEW"
+}
+O parâmetro ReturnValues é definido como UPDATED_NEW, o que retorna os novos valores de
+todos os atributos que foram atualizados. Neste caso, ele retorna 0 (zero).
+Sempre que alguém reproduzir essa música, podemos usar a ação UpdateItem a seguir para
+aumentar Plays por um.
+{
+ TableName: "Music",
+ Key: {
+ "Artist":"No One You Know",
+ "SongTitle":"Call Me Today"
+ },
+ UpdateExpression: "SET Plays = Plays + :incr",
+ ExpressionAttributeValues: {
+Versão da API 2012-08-10
+47
+Amazon DynamoDB Guia do desenvolvedor
+Excluir dados de uma tabela
+ ":incr": 1
+ },
+ ReturnValues: "UPDATED_NEW"
+}
+Note
+Para obter exemplos de código que usam UpdateItem, consulte Conceitos básicos do
+DynamoDB e dos AWS SDKs (p. 89).
+PartiQL for DynamoDB
+Com PartiQL, use a operação ExecuteStatement para modificar um item em uma tabela, usando a
+instrução Update PartiQL.
+A chave primária dessa tabela consiste em Artist e SongTitle. Você deve especificar valores para
+esses atributos.
+UPDATE Music
+SET RecordLabel ='Global Records'
+WHERE Artist='No One You Know' AND SongTitle='Call Me Today'
+Também é possível modificar vários campos de uma só vez, como no exemplo a seguir.
+UPDATE Music
+SET RecordLabel = 'Global Records'
+SET AwardsWon = 10
+WHERE Artist ='No One You Know' AND SongTitle='Call Me Today'
+Update também oferece suporte a contadores atômicos ou a atributos do tipo Number que podem ser
+aumentados ou reduzidos. Os contadores atômicos são semelhantes de muitas maneiras a geradores
+de sequências, colunas de identidade ou campos de incremento automático em bancos de dados
+SQL.
+Veja a seguir um exemplo de instrução Update para inicializar um novo atributo (Plays) para controlar
+o número de vezes em que uma música foi reproduzida.
+UPDATE Music
+SET Plays = 0
+WHERE Artist='No One You Know' AND SongTitle='Call Me Today'
+Sempre que alguém reproduzir essa música, poderemos usar a instrução Update a seguir para
+aumentar Plays (Reproduções) em um.
+UPDATE Music
+SET Plays = Plays + 1
+WHERE Artist='No One You Know' AND SongTitle='Call Me Today'
+Note
+Para obter exemplos de código que usam Update e ExecuteStatement, consulte
+Instruções Update em PartiQL para DynamoDB (p. 495).
+Excluir dados de uma tabela
+No SQL, a instrução DELETE remove uma ou mais linhas de uma tabela. O Amazon DynamoDB usa a
+operação DeleteItem para excluir um item de cada vez.
+Versão da API 2012-08-10
+48
+Amazon DynamoDB Guia do desenvolvedor
+Excluir dados de uma tabela
+Tópicos
+• SQL (p. 49)
+• DynamoDB (p. 49)
+SQL
+No SQL, você usa a instrução DELETE para excluir uma ou mais linhas. A cláusula WHERE determina as
+linhas que você deseja modificar. Veja um exemplo a seguir.
+DELETE FROM Music
+WHERE Artist = 'The Acme Band' AND SongTitle = 'Look Out, World';
+Você pode modificar a cláusula WHERE para excluir várias linhas. Por exemplo, é possível excluir todas as
+músicas de um determinado artista, conforme mostrado no exemplo a seguir.
+DELETE FROM Music WHERE Artist = 'The Acme Band'
+Note
+Se você omitir a cláusula WHERE, o banco de dados tenta excluir todas as linhas da tabela.
+DynamoDB
+No DynamoDB, você pode usar a API clássica ou PartiQL, uma linguagem de consultas compatível com
+SQL, para excluir um único item. (Caso deseje modificar vários itens, você deve usar várias operações .)
+DynamoDB API
+Com a API do DynamoDB, use a ação DeleteItem para excluir dados de uma tabela, um item de
+cada vez. Você deve especificar os valores de chave primária do item.
+{
+ TableName: "Music",
+ Key: {
+ Artist: "The Acme Band",
+ SongTitle: "Look Out, World"
+ }
+}
+Note
+Além do DeleteItem, o Amazon DynamoDB oferece suporte a uma ação
+BatchWriteItem para excluir vários itens ao mesmo tempo.
+DeleteItem oferece suporte a gravações condicionais, nas quais a operação será bemsucedida apenas se uma ConditionExpression específica for verdadeira. Por exemplo, a ação
+DeleteItem a seguir exclui o item somente se ele tiver um atributo RecordLabel.
+{
+ TableName: "Music",
+ Key: {
+ Artist: "The Acme Band",
+ SongTitle: "Look Out, World"
+ },
+ ConditionExpression: "attribute_exists(RecordLabel)"
+}
+Versão da API 2012-08-10
+49
+Amazon DynamoDB Guia do desenvolvedor
+Remover uma tabela
+Note
+Para obter exemplos de código que usam DeleteItem, consulte Conceitos básicos do
+DynamoDB e dos AWS SDKs (p. 89).
+PartiQL for DynamoDB
+Com PartiQL, use a instrução Delete por meio da operação ExecuteStatement para excluir dados
+de uma tabela, um item de cada vez. Você deve especificar os valores de chave primária do item.
+A chave primária dessa tabela consiste em Artist e SongTitle. Você deve especificar valores para
+esses atributos.
+DELETE FROM Music
+WHERE Artist = 'Acme Band' AND SongTitle = 'PartiQL Rocks'
+Você também pode especificar condições adicionais para a operação. A operação DELETE a seguir
+somente excluirá o item se ele tiver mais de 11 Awards (Prêmios).
+DELETE FROM Music
+WHERE Artist = 'Acme Band' AND SongTitle = 'PartiQL Rocks' AND Awards > 11
+Note
+Para obter exemplos de código que usam DELETE e ExecuteStatement, consulte
+Instruções Delete em PartiQL para DynamoDB (p. 498).
+Remover uma tabela
+No SQL, você usa a instrução DROP TABLE para remover uma tabela. No Amazon DynamoDB, você usa a
+operação DeleteTable.
+Tópicos
+• SQL (p. 50)
+• DynamoDB (p. 50)
+SQL
+Quando você não precisar mais de uma tabela e quiser descartá-la permanentemente, use a instrução
+DROP TABLE no SQL.
+DROP TABLE Music;
+Depois que uma tabela é eliminada, ela não pode ser recuperada. (Alguns bancos de dados relacionais
+permitem que você desfaça uma operação DROP TABLE, mas essa funcionalidade é específica do
+fornecedor e não é amplamente implementada.)
+DynamoDB
+O DynamoDB tem uma ação semelhante: DeleteTable. No exemplo a seguir, a tabela é excluída
+permanentemente.
+{
+Versão da API 2012-08-10
+50
+Amazon DynamoDB Guia do desenvolvedor
+Recursos adicionais do Amazon DynamoDB
+ TableName: "Music"
+}
+Note
+Para obter exemplos de código que usam DeleteTable, consulte Conceitos básicos do
+DynamoDB e dos AWS SDKs (p. 89).
