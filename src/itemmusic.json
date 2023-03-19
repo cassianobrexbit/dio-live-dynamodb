@@ -1,6 +1,8 @@
 {
-  "Artist": {"S": "Iron Maiden"},
-  "SongTitle": {"S": "Chains of Misery"},
-  "AlbumTitle": {"S": "Fear of the Dark"},
-  "SongYear": {"S": "1992"}
+  "Artist": {"S": "Tim Maia"},
+  "SongTitle": {"S": "Azul da cor do mar"},
+  "AlbumTitle": {"S": "Tim Maia"},
+  "SongYear": {"S": "1971"}
 }
+
+

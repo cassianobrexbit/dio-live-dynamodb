@@ -3,30 +3,30 @@
         {
             "PutRequest": {
                 "Item": {
-                  "Artist": {"S": "Iron Maiden"},
-                  "SongTitle": {"S": "Wasting Love"},
-                  "AlbumTitle": {"S": "Fear of the Dark Live"},
-                  "SongYear": {"S": "1992"}
+                  "Artist": {"S": "Tim Maia"},
+                  "SongTitle": {"S": "Gostava Tanto de você"},
+                  "AlbumTitle": {"S": "Tim Maia"},
+                  "SongYear": {"S": "1974"}
                 }
             }
         },
         {
             "PutRequest": {
                 "Item": {
-                  "Artist": {"S": "Iron Maiden"},
-                  "SongTitle": {"S": "Weekend Warrior"},
-                  "AlbumTitle": {"S": "Fear of the Dark"},
-                  "SongYear": {"S": "1992"}
+                  "Artist": {"S": "Tim Maia"},
+                  "SongTitle": {"S": "Não quero dinheiro"},
+                  "AlbumTitle": {"S": "Tim Maia"},
+                  "SongYear": {"S": "1972"}
                 }
             }
         },
         {
             "PutRequest": {
                 "Item": {
-                  "Artist": {"S": "Iron Maiden"},
-                  "SongTitle": {"S": "Fear of the Dark"},
-                  "AlbumTitle": {"S": "Fear of the Dark Tour"},
-                  "SongYear": {"S": "1992"}
+                  "Artist": {"S": "Tim Maia"},
+                  "SongTitle": {"S": "O que me importa"},
+                  "AlbumTitle": {"S": "Tim Maia"},
+                  "SongYear": {"S": "1973"}
                 }
             }
         }

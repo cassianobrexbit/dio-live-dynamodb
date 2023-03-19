@@ -1,7 +1,9 @@
-# dio-live-dynamodb
-Repositório para o live coding do dia 30/09/2021 sobre o Amazon DynamoDB
+#  Projeto Dynamodb
+
+Criando Tabela Usando Dynamodb
 
 ### Serviço utilizado
+
   - Amazon DynamoDB
   - Amazon CLI para execução em linha de comando
 
@@ -83,6 +85,7 @@ aws dynamodb query \
     --key-condition-expression "Artist = :artist" \
     --expression-attribute-values  '{":artist":{"S":"Iron Maiden"}}'
 ```
+
 - Pesquisar item por artista e título da música
 
 ```
@@ -121,3 +124,4 @@ aws dynamodb query \
     --key-condition-expression "SongTitle = :v_song and SongYear = :v_year" \
     --expression-attribute-values  '{":v_song":{"S":"Wasting Love"},":v_year":{"S":"1992"} }'
 ```
+
