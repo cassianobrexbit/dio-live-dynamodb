@@ -14,7 +14,7 @@
             "PutRequest": {
                 "Item": {
                   "Artist": {"S": "Iron Maiden"},
-                  "SongTitle": {"S": "Weekend Warrior"},
+                  "SongTitle": {"S": "Be Quick Or Be Dead"},
                   "AlbumTitle": {"S": "Fear of the Dark"},
                   "SongYear": {"S": "1992"}
                 }
