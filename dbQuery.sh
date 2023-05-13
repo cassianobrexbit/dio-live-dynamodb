@@ -12,7 +12,7 @@ echo "Pesquisar item por artista e título da música"
 aws dynamodb query \
     --table-name Music \
     --key-condition-expression "Artist = :artist and SongTitle = :title" \
-    --expression-attribute-values file://keyconditions.json
+    --expression-attribute-values file://./src/keyconditions.json
 
 echo "Pesquisa pelo index secundário baseado no título do álbum"
 
