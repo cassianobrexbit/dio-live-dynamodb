@@ -21,16 +21,28 @@ aws dynamodb create-table \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5
 
+# Aguarda a entrada do usuário
+
+read -n 1 -s -r -p "Pressione qualquer tecla para continuar..."
+
 # Inserir um item
 
 aws dynamodb put-item \
     --table-name Music \
     --item file://./src/itemmusic.json
 
+# Aguarda a entrada do usuário
+
+read -n 1 -s -r -p "Pressione qualquer tecla para continuar..."
+
 # Inserir múltiplos itens
 
 aws dynamodb batch-write-item \
     --request-items file://./src/batchmusic.json
+
+# Aguarda a entrada do usuário
+
+read -n 1 -s -r -p "Pressione qualquer tecla para continuar..."
 
 # Criar um index global secundário baeado no título do álbum
 
